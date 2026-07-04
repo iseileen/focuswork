@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FocusWork</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --text:#191919;
+    --text-secondary:#787774;
+    --text-faint:#a8a8a5;
+    --border:#e9e9e7;
+    --hover:#f7f7f5;
+    --card:#fbfbfa;
+    --red:#eb5757;
+    --orange:#d9730d;
+    --blue:#2383e2;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Microsoft JhengHei",Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    font-size:15px;
+    line-height:1.5;
+  }
+  button{font-family:inherit;cursor:pointer;-webkit-appearance:none;}
+  input,select,textarea{font-family:inherit;font-size:15px;-webkit-appearance:none;}
+  a{color:inherit;}
+
+  .app{max-width:760px;margin:0 auto;padding:0 14px 60px;}
+
+  /* ---- Header ---- */
+  header.topbar{
+    position:sticky;top:0;background:var(--bg);z-index:50;
+    border-bottom:1px solid var(--border);
+    padding:12px 14px 10px;
+  }
+  .topbar-row1{display:flex;align-items:center;gap:10px;}
+  .brand-block{display:flex;align-items:center;gap:9px;flex:none;}
+  .brand-mark{
+    width:30px;height:30px;border-radius:8px;background:var(--text);color:#fff;
+    display:flex;align-items:center;justify-content:center;flex:none;
+    font-size:12px;font-weight:800;letter-spacing:.2px;
+  }
+  .brand-text{display:flex;flex-direction:column;line-height:1.2;}
+  .brand-name{font-size:15px;font-weight:800;letter-spacing:.1px;}
+  .brand-tagline{font-size:9.5px;color:var(--text-faint);font-weight:500;white-space:nowrap;letter-spacing:.1px;}
+  .search-wrap{flex:1;position:relative;min-width:0;}
+  .search-wrap input{
+    width:100%;padding:9px 12px 9px 30px;border:1px solid var(--border);border-radius:var(--radius);
+    background:var(--card);
+  }
+  .search-wrap input:focus{outline:none;border-color:var(--text-faint);background:var(--bg);}
+  .search-wrap .icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-faint);font-size:13px;pointer-events:none;}
+  .icon-btn{
+    border:1px solid var(--border);background:var(--bg);width:36px;height:36px;border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:center;font-size:16px;flex:none;
+  }
+  .icon-btn:hover{background:var(--hover);}
+  .topbar-row2{display:flex;gap:6px;margin-top:9px;overflow-x:auto;}
+  .pill-btn{
+    border:1px solid var(--border);background:var(--bg);color:var(--text-secondary);
+    padding:6px 12px;border-radius:20px;font-size:12.5px;font-weight:600;white-space:nowrap;flex:none;
+  }
+  .pill-btn:hover{background:var(--hover);color:var(--text);}
+
+  @media (max-width:420px){
+    .brand-tagline{display:none;}
+  }
+
+  /* ---- Quick add bar ---- */
+  .quickbar{padding:14px 0 6px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+  .qb-row{display:flex;gap:8px;}
+  .qb-row input{
+    flex:1;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:15.5px;
+  }
+  .qb-row input:focus{outline:none;border-color:var(--text);}
+  .qb-add{
+    background:var(--text);color:#fff;border:none;border-radius:var(--radius);padding:0 18px;font-weight:700;font-size:14px;
+  }
+  .qb-add:active{background:#000;}
+  .qb-cats{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .qb-cats button{
+    border:1px solid var(--border);background:var(--bg);color:var(--text-secondary);
+    padding:6px 13px;border-radius:20px;font-size:13px;font-weight:600;
+  }
+  .qb-cats button.active{background:var(--text);color:#fff;border-color:var(--text);}
+  .qb-person,.qb-date{
+    margin-top:8px;width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius);
+    display:none;
+  }
+  .qb-person.show,.qb-date.show{display:block;}
+  .qb-preview{font-size:12px;color:var(--blue);margin-top:6px;font-weight:600;display:none;}
+  .qb-preview.show{display:block;}
+  .qb-hint{font-size:11.5px;color:var(--text-faint);margin-top:6px;}
+
+  /* ---- Cards ---- */
+  .stack{display:flex;flex-direction:column;gap:14px;}
+  .card{border:1px solid var(--border);border-radius:10px;background:var(--bg);}
+  .card-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .card-head h3{margin:0;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;}
+  .card-head .count{color:var(--text-faint);font-weight:500;font-size:12px;}
+  .card-body{padding:6px;}
+  .empty{color:var(--text-faint);font-size:12.5px;padding:18px 8px;text-align:center;}
+
+  .item-row{
+    padding:10px 8px;border-radius:8px;display:flex;gap:10px;align-items:flex-start;
+  }
+  .item-row:active{background:var(--hover);}
+  .chk{
+    margin-top:2px;width:20px;height:20px;border:1.5px solid var(--text-faint);border-radius:6px;flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;
+  }
+  .chk.done{background:var(--text);border-color:var(--text);}
+  .item-main{flex:1;min-width:0;}
+  .item-title{font-size:14.5px;word-break:break-word;}
+  .item-title.done{color:var(--text-faint);text-decoration:line-through;}
+  .item-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+  .chip{
+    font-size:11px;padding:2px 8px;border-radius:10px;background:var(--card);border:1px solid var(--border);color:var(--text-secondary);
+  }
+  .chip.pri-high{color:var(--red);border-color:var(--red);}
+  .chip.pri-medium{color:var(--orange);border-color:var(--orange);}
+  .chip.tag{background:var(--bg);}
+  .chip.due{color:var(--blue);border-color:var(--blue);}
+  .chip.overdue{color:var(--red);border-color:var(--red);background:#fdecec;}
+
+  .waiting-row{border-bottom:1px solid var(--border);padding:11px 8px;}
+  .waiting-row:last-child{border-bottom:none;}
+  .waiting-row:active{background:var(--hover);}
+  .wr-top{display:flex;justify-content:space-between;gap:8px;}
+  .wr-person{font-size:12px;color:var(--blue);font-weight:700;}
+  .wr-days{font-size:11.5px;color:var(--text-faint);}
+  .wr-days.warn{color:var(--red);font-weight:700;}
+  .wr-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+
+  .btn{
+    border:1px solid var(--border);background:var(--bg);color:var(--text);
+    padding:9px 14px;border-radius:var(--radius);font-size:13.5px;font-weight:600;white-space:nowrap;
+  }
+  .btn:active{background:var(--hover);}
+  .btn-primary{background:var(--text);color:#fff;border-color:var(--text);}
+  .btn-sm{padding:6px 11px;font-size:12px;}
+  .btn-danger{color:var(--red);border-color:var(--red);}
+  .btn-block{width:100%;}
+
+  /* ---- Modal ---- */
+  .overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;
+    align-items:flex-end;justify-content:center;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:520px;padding:18px 18px calc(18px + env(safe-area-inset-bottom));
+    max-height:88vh;overflow-y:auto;position:relative;
+  }
+  @media (min-width:560px){
+    .overlay{align-items:center;padding:20px;}
+    .modal{border-radius:14px;}
+  }
+  .modal h2{margin:0 0 16px;font-size:16px;}
+  .field{margin-bottom:13px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:5px;}
+  .field input[type=text],.field textarea,.field select{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:15px;
+  }
+  .field textarea{resize:vertical;min-height:56px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+  .hidden{display:none !important;}
+  .segmented{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+  .segmented button{flex:1;border:none;background:#fff;padding:9px 4px;font-size:13px;border-right:1px solid var(--border);}
+  .segmented button:last-child{border-right:none;}
+  .segmented button.active{background:var(--text);color:#fff;}
+  .close-x{position:absolute;top:12px;right:14px;border:none;background:none;font-size:20px;color:var(--text-faint);cursor:pointer;padding:4px;}
+  .drag-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 12px;}
+
+  .review-q{margin-bottom:14px;}
+  .review-q .qtext{font-size:13px;font-weight:700;margin-bottom:6px;}
+  .followup-list{margin-top:8px;font-size:12.5px;color:var(--text-secondary);}
+  .followup-list div{padding:3px 0;}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--text);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:200;opacity:0;
+    transition:opacity .15s;pointer-events:none;max-width:90%;text-align:center;
+  }
+  .toast.show{opacity:1;}
+
+  .search-back{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .search-back button{border:none;background:none;color:var(--blue);font-size:14px;font-weight:600;padding:4px 0;}
+
+  footer.hint{
+		color:#999;
+		font-size:11px;
+		text-align:center;
+		line-height:1.8;
+		margin-top:30px;
+	}
+
+
+	.local-badge {
+		display: inline-block;
+		padding: 2px 8px;
+		border: 1px solid #ddd;
+		border-radius: 12px;
+		font-size: 11px;
+		font-weight: 600;
+		color: #666;
+		margin-right: 6px;
+	}
+	.local-badge_info {
+		min-width:200px;
+		color: #666;
+		font-size: 11px;
+	}
+
+  @media (min-width:600px){
+    .stack{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .qb-row input{font-size:15px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-row1">
+    <div class="brand-block">
+      <div class="brand-mark">FW</div>
+      <div class="brand-text">
+        <div class="brand-name">FocusWork</div>
+        <div class="brand-tagline">Capture fast. Find fast. Follow up fast.</div>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <span class="icon">⌕</span>
+      <input id="searchInput" type="text" placeholder="搜尋文字 / Tag / 人名...">
+    </div>
+    <button class="icon-btn" id="btnSettings" title="設定">⚙</button>
+  </div>
+  <div class="topbar-row2">
+    <button class="pill-btn" id="btnReview">📝 Daily Review</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- Quick add -->
+  <div class="quickbar">
+    <div class="qb-row">
+      <input id="qaInput" type="text" placeholder="想到什麼直接打...">
+      <button class="qb-add" id="qaSubmit">新增</button>
+    </div>
+    <div class="qb-cats" id="qaCats">
+      <button data-val="task" class="active">📌 事項</button>
+      <button data-val="waiting">⏳ Waiting</button>
+    </div>
+    <input id="qaDate" type="date" class="qb-date show" placeholder="日期（選填）">
+    <div class="qb-preview" id="qaPreview"></div>
+    <input id="qaPerson" type="text" class="qb-person" placeholder="等待對象，例如：Jimmy">
+    <div class="qb-hint">日期留空 = 進 Inbox；填今天 = Today；填本週內 = This Week；填更晚 = 之後處理（也在 Inbox）。輸入 #標籤 會自動變成 Tag。</div>
+  </div>
+
+  <!-- Search results -->
+  <div id="view-search" class="hidden">
+    <div class="search-back">
+      <button id="btnClearSearch">‹ 返回</button>
+    </div>
+    <div id="searchResults"></div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="view-dashboard">
+    <div class="stack">
+      <div class="card">
+        <div class="card-head"><h3>🎯 Today</h3><span class="count" id="cnt-today"></span></div>
+        <div class="card-body" id="list-today"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>⏳ Waiting</h3><span class="count" id="cnt-waiting"></span></div>
+        <div class="card-body" id="list-waiting"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>📥 Inbox</h3><span class="count" id="cnt-inbox"></span></div>
+        <div class="card-body" id="list-inbox"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>📅 This Week</h3><span class="count" id="cnt-week"></span></div>
+        <div class="card-body" id="list-week"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="hint">
+<div>FocusWork v0.1.0。Created by Eileen W. L. Chen · MIT License</div>
+<div class='local-badge_info'><div class='local-badge'>[ Local-first ]</div>
+資料僅儲存在目前裝置，不支援跨裝置同步，請定期備份。</div>
+</footer>
+</div>
+
+<!-- Item Detail Modal -->
+<div class="overlay" id="overlayDetail">
+  <div class="modal">
+    <div class="drag-handle"></div>
+    <button class="close-x" data-close="overlayDetail">✕</button>
+    <h2 id="detailTitle">事項詳情</h2>
+    <div id="detailBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="btnDeleteItem" style="margin-right:auto;">刪除</button>
+      <button class="btn" id="btnEditItem">編輯</button>
+      <button class="btn btn-primary" id="btnToggleDone">標記完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="overlay" id="overlayEdit">
+  <div class="modal">
+    <div class="drag-handle"></div>
+    <button class="close-x" data-close="overlayEdit">✕</button>
+    <h2>編輯事項</h2>
+    <input type="hidden" id="editId">
+    <div class="field">
+      <label>標題</label>
+      <input type="text" id="f-title">
+    </div>
+    <div class="field">
+      <label>類型</label>
+      <div class="segmented" id="f-category">
+        <button data-val="task">📌 事項</button>
+        <button data-val="waiting">⏳ Waiting</button>
+      </div>
+    </div>
+    <div class="field" id="f-date-field">
+      <label>日期（選填，留空 = Inbox）</label>
+      <input type="date" id="f-date">
+    </div>
+    <div class="field" id="f-person-field">
+      <label>等待對象</label>
+      <input type="text" id="f-person" placeholder="例如：Jimmy">
+    </div>
+    <div class="field">
+      <label>優先度</label>
+      <div class="segmented" id="f-priority">
+        <button data-val="low">Low</button>
+        <button data-val="medium">Medium</button>
+        <button data-val="high">High</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>標籤 Tag（用逗號分隔）</label>
+      <input type="text" id="f-tags" placeholder="例如：1999, 科專">
+    </div>
+    <div class="field">
+      <label>備註</label>
+      <textarea id="f-notes" placeholder="（選填）"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" data-close="overlayEdit">取消</button>
+      <button class="btn btn-primary" id="btnSaveItem">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Daily Review Modal -->
+<div class="overlay" id="overlayReview">
+  <div class="modal">
+    <div class="drag-handle"></div>
+    <button class="close-x" data-close="overlayReview">✕</button>
+    <h2>Daily Review — <span id="reviewDate"></span></h2>
+    <div class="review-q"><div class="qtext">1. 等誰？</div><textarea id="r-q1"></textarea></div>
+    <div class="review-q"><div class="qtext">2. 待辦事項？（每行一件，自動加入明天的 Today）</div><textarea id="r-q2"></textarea></div>
+    <div class="review-q"><div class="qtext">3. Inbox還有嗎？</div><textarea id="r-q3"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn" data-close="overlayReview">取消</button>
+      <button class="btn btn-primary" id="btnSaveReview">完成 Review</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Settings Modal -->
+<div class="overlay" id="overlaySettings">
+  <div class="modal">
+    <div class="drag-handle"></div>
+    <button class="close-x" data-close="overlaySettings">✕</button>
+    <h2>設定 / 資料備份</h2>
+    <p style="font-size:13px;color:var(--text-secondary);margin-top:-8px;">所有資料儲存在這台裝置的瀏覽器裡。建議定期匯出備份，避免清除瀏覽器資料時遺失。</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+      <button class="btn" id="btnExport">⬇ 匯出 JSON</button>
+      <button class="btn" id="btnImport">⬆ 匯入 JSON</button>
+      <input type="file" id="fileImport" accept=".json" class="hidden">
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;">
+      <button class="btn btn-danger" id="btnReset">清空所有資料</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= Utilities ================= */
+const $ = (sel,root)=> (root||document).querySelector(sel);
+const $$ = (sel,root)=> Array.from((root||document).querySelectorAll(sel));
+const uid = ()=> 'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const todayStr = ()=> new Date().toISOString().slice(0,10);
+function addDays(dateStr, n){ const d=new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function daysBetween(a,b){ const d1=new Date(a+'T00:00:00'); const d2=new Date(b+'T00:00:00'); return Math.round((d2-d1)/86400000); }
+function startOfWeek(dateStr){
+  const d = new Date(dateStr+'T00:00:00');
+  const day = (d.getDay()+6)%7; // Monday=0
+  d.setDate(d.getDate()-day);
+  return d.toISOString().slice(0,10);
+}
+/* Auto-classify a task item by its date: overdue/today -> today, within this week -> week, else -> inbox */
+function bucketOf(dueDate, today){
+  if(!dueDate) return 'inbox';
+  if(dueDate <= today) return 'today';
+  const weekEnd = addDays(startOfWeek(today), 6);
+  if(dueDate <= weekEnd) return 'week';
+  return 'inbox';
+}
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),1800);
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* parse #tags out of free text */
+function extractTags(text){
+  const tags = [];
+  const cleaned = text.replace(/#([^\s#]+)/g, (m,t)=>{ tags.push(t); return ''; }).replace(/\s+/g,' ').trim();
+  return {title: cleaned, tags};
+}
+
+/* ================= Store ================= */
+const STORAGE_KEY = 'sbpm_data_v2';
+const Store = {
+  data: null,
+  load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      this.data = raw ? JSON.parse(raw) : {items:[], dailyLogs:[]};
+    }catch(e){ this.data = {items:[], dailyLogs:[]}; }
+    if(!this.data.items) this.data.items=[];
+    if(!this.data.dailyLogs) this.data.dailyLogs=[];
+  },
+  save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data)); }
+};
+
+/* ================= Item helpers =================
+item: { id, title, type: task|waiting,
+  priority: high|medium|low, tags:[], status: active|done,
+  dueDate (only for type=task; '' = Inbox, auto-bucketed into Today/Week/Inbox by date),
+  createdAt, completedAt, notes,
+  person, trackDate, followUps:[{date,note}]  (only for type=waiting)
+}
+=================================================== */
+function addItem(fields){
+  const item = Object.assign({
+    id: uid(), title:'', type:'task', priority:'medium', tags:[], dueDate:'',
+    status:'active', createdAt: new Date().toISOString(), completedAt:null, notes:'',
+    person:'', trackDate:'', followUps:[]
+  }, fields);
+  Store.data.items.push(item);
+  Store.save();
+  return item;
+}
+function getItem(id){ return Store.data.items.find(i=>i.id===id); }
+function toggleDone(id){
+  const it = getItem(id); if(!it) return;
+  if(it.status==='done'){ it.status='active'; it.completedAt=null; }
+  else { it.status='done'; it.completedAt=new Date().toISOString(); }
+  Store.save();
+}
+function deleteItem(id){ Store.data.items = Store.data.items.filter(i=>i.id!==id); Store.save(); }
+function addFollowUp(id){
+  const it = getItem(id); if(!it) return;
+  const d = todayStr();
+  it.followUps.push({date:d, note:'已追蹤'});
+  it.trackDate = d;
+  Store.save();
+  toast('已新增追蹤紀錄：'+d);
+}
+
+/* ================= Rendering ================= */
+function priLabel(p){ return {high:'High',medium:'Medium',low:'Low'}[p]||''; }
+function itemChips(it){
+  let chips = '';
+  if(it.priority && it.priority!=='medium') chips += `<span class="chip pri-${it.priority}">${priLabel(it.priority)}</span>`;
+  if(it.type==='task' && it.dueDate && it.status!=='done'){
+    const overdue = it.dueDate < todayStr();
+    chips += `<span class="chip ${overdue?'overdue':'due'}">${overdue?'⚠ 逾期 ':'📅 '}${it.dueDate}</span>`;
+  }
+  (it.tags||[]).forEach(t=> chips += `<span class="chip tag">#${escapeHtml(t)}</span>`);
+  return chips;
+}
+function renderItemRow(it){
+  const done = it.status==='done';
+  return `<div class="item-row" data-id="${it.id}" data-action="open-detail">
+    <div class="chk ${done?'done':''}" data-action="toggle-done" data-id="${it.id}">${done?'✓':''}</div>
+    <div class="item-main">
+      <div class="item-title ${done?'done':''}">${escapeHtml(it.title)}</div>
+      <div class="item-meta">${itemChips(it)}</div>
+    </div>
+  </div>`;
+}
+
+function renderDashboard(){
+  const items = Store.data.items;
+  const today = todayStr();
+
+  const activeTasks = items.filter(i=>i.type==='task' && i.status!=='done');
+  const todayItems = activeTasks.filter(i=> bucketOf(i.dueDate, today)==='today').sort((a,b)=> (a.dueDate||'').localeCompare(b.dueDate||''));
+  const weekItems = activeTasks.filter(i=> bucketOf(i.dueDate, today)==='week').sort((a,b)=> (a.dueDate||'').localeCompare(b.dueDate||''));
+  const inboxItems = activeTasks.filter(i=> bucketOf(i.dueDate, today)==='inbox').sort((a,b)=> b.createdAt.localeCompare(a.createdAt));
+  const todayDone = items.filter(i=>i.type==='task' && i.status==='done' && i.completedAt && i.completedAt.slice(0,10)===today);
+
+  $('#cnt-today').textContent = `${todayItems.length}/3`;
+  let todayHtml = todayItems.map(renderItemRow).join('') + todayDone.map(renderItemRow).join('');
+  if(todayItems.length>3){
+    todayHtml = `<div style="padding:8px 8px 0;"><span class="chip" style="color:var(--red);border-color:var(--red);">⚠ 超過3件，建議精簡</span></div>` + todayHtml;
+  }
+  $('#list-today').innerHTML = todayHtml || '<div class="empty">今天還沒有必做事項</div>';
+
+  const waitingItems = items.filter(i=>i.type==='waiting' && i.status!=='done').sort((a,b)=> a.createdAt.localeCompare(b.createdAt));
+  $('#cnt-waiting').textContent = waitingItems.length;
+  $('#list-waiting').innerHTML = waitingItems.length ? waitingItems.map(it=>{
+    const created = it.createdAt.slice(0,10);
+    const days = daysBetween(created, today);
+    const lastTrack = it.trackDate || created;
+    const trackedToday = it.trackDate === today;
+    return `<div class="waiting-row" data-id="${it.id}">
+      <div class="wr-top">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="chk" data-action="toggle-done" data-id="${it.id}"></div>
+          <span class="wr-person">${escapeHtml(it.person||'—')}</span>
+        </div>
+        <span class="wr-days ${days>=3?'warn':''}">已等 ${days} 天</span>
+      </div>
+      <div class="item-title" data-action="open-detail" data-id="${it.id}" style="padding-left:28px;">${escapeHtml(it.title)}</div>
+      <div class="wr-foot" style="padding-left:28px;">
+        <span class="chip">${trackedToday? '✓ 今天已追蹤' : '最後追蹤：'+lastTrack}</span>
+        <button class="btn btn-sm" data-action="follow-up" data-id="${it.id}">✓ 追蹤一下</button>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty">目前沒有 Waiting 事項</div>';
+
+  $('#cnt-inbox').textContent = inboxItems.length;
+  $('#list-inbox').innerHTML = inboxItems.length ? inboxItems.map(renderItemRow).join('') : '<div class="empty">Inbox 是空的 👍</div>';
+
+  $('#cnt-week').textContent = weekItems.length;
+  $('#list-week').innerHTML = weekItems.length ? weekItems.map(renderItemRow).join('') : '<div class="empty">本週還沒有事項</div>';
+}
+
+/* ---- Search (covers everything, including completed items = archive) ---- */
+function runSearch(q){
+  q = q.trim().toLowerCase();
+  if(!q){ $('#view-search').classList.add('hidden'); $('#view-dashboard').classList.remove('hidden'); return; }
+  $('#view-dashboard').classList.add('hidden');
+  $('#view-search').classList.remove('hidden');
+
+  const results = Store.data.items.filter(it=>{
+    const hay = [it.title, it.notes, it.person, (it.tags||[]).join(' '), it.createdAt.slice(0,10), it.dueDate||''].join(' ').toLowerCase();
+    return hay.includes(q);
+  }).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+
+  const logMatches = Store.data.dailyLogs.filter(l=>{
+    const hay = Object.values(l.answers||{}).join(' ').toLowerCase() + ' ' + l.date;
+    return hay.includes(q);
+  });
+
+  let html = '';
+  if(results.length) html += results.map(renderItemRow).join('');
+  if(logMatches.length){
+    html += logMatches.map(l=>`<div class="item-row"><div class="item-main"><div class="item-title">📝 Daily Log ${l.date}</div>
+      <div class="item-meta"><span class="chip">${escapeHtml((l.answers.q1||'').slice(0,60))}</span></div></div></div>`).join('');
+  }
+  $('#searchResults').innerHTML = html || '<div class="empty">找不到符合的結果</div>';
+}
+
+function refreshAll(){ renderDashboard(); }
+
+/* ================= Overlay helpers ================= */
+function openOverlay(id){ $('#'+id).classList.add('open'); }
+function closeOverlay(id){ $('#'+id).classList.remove('open'); }
+document.addEventListener('click', e=>{
+  const c = e.target.closest('[data-close]');
+  if(c) closeOverlay(c.dataset.close);
+  if(e.target.classList.contains('overlay')) e.target.classList.remove('open');
+});
+
+/* ================= Search input ================= */
+let searchDebounce;
+$('#searchInput').addEventListener('input', e=>{
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(()=> runSearch(e.target.value), 100);
+});
+$('#btnClearSearch').addEventListener('click', ()=>{ $('#searchInput').value=''; runSearch(''); });
+
+/* ================= Quick add ================= */
+let qaCategory = 'task';
+function bucketLabel(dueDate){
+  const b = bucketOf(dueDate, todayStr());
+  return {today:'🎯 Today（今天）', week:'📅 This Week（本週）', inbox:'📥 Inbox（之後處理）'}[b];
+}
+function updatePreview(){
+  if(qaCategory!=='task'){ $('#qaPreview').classList.remove('show'); return; }
+  const d = $('#qaDate').value;
+  $('#qaPreview').textContent = '→ 會排進 ' + bucketLabel(d);
+  $('#qaPreview').classList.add('show');
+}
+$('#qaCats').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  qaCategory = b.dataset.val;
+  $$('#qaCats button').forEach(x=>x.classList.toggle('active', x===b));
+  $('#qaDate').classList.toggle('show', qaCategory==='task');
+  $('#qaPerson').classList.toggle('show', qaCategory==='waiting');
+  $('#qaInput').placeholder = qaCategory==='waiting' ? '在等什麼事...' : '想到什麼直接打...';
+  updatePreview();
+});
+$('#qaDate').addEventListener('input', updatePreview);
+updatePreview();
+
+function submitQuickAdd(){
+  const raw = $('#qaInput').value.trim();
+  if(!raw){ return; }
+  const {title, tags} = extractTags(raw);
+  if(!title){ toast('請輸入內容'); return; }
+
+  if(qaCategory==='task'){
+    const dueDate = $('#qaDate').value;
+    if(dueDate && bucketOf(dueDate, todayStr())==='today'){
+      const activeTodayCount = Store.data.items.filter(i=>i.type==='task' && i.status!=='done' && bucketOf(i.dueDate, todayStr())==='today').length;
+      if(activeTodayCount>=3 && !confirm('Today 已有 3 件事了，仍要新增嗎？')) return;
+    }
+    addItem({title, type:'task', tags, dueDate});
+    toast('已新增到 ' + bucketLabel(dueDate));
+  } else {
+    const person = $('#qaPerson').value.trim();
+    addItem({title, type:'waiting', tags, person});
+    toast('已新增到 Waiting');
+  }
+  $('#qaInput').value='';
+  $('#qaDate').value='';
+  $('#qaPerson').value='';
+  updatePreview();
+  refreshAll();
+}
+$('#qaSubmit').addEventListener('click', submitQuickAdd);
+$('#qaInput').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submitQuickAdd(); } });
+$('#qaPerson').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submitQuickAdd(); } });
+
+/* ================= Item detail ================= */
+let detailItemId = null;
+function openDetail(id){
+  const it = getItem(id); if(!it) return;
+  detailItemId = id;
+  $('#detailTitle').textContent = it.title;
+  const typeLabel = it.type==='waiting' ? '⏳ Waiting' : ('📌 ' + {today:'Today',week:'This Week',inbox:'Inbox'}[bucketOf(it.dueDate, todayStr())]);
+  let html = `<div class="item-meta" style="margin-bottom:10px;">${itemChips(it)}<span class="chip">${typeLabel}</span></div>`;
+  if(it.type==='waiting'){
+    html += `<div class="field"><label>等待對象</label><div>${escapeHtml(it.person||'—')}</div></div>
+      <div class="field"><label>追蹤紀錄</label><div class="followup-list">${
+        (it.followUps&&it.followUps.length)? it.followUps.map(f=>`<div>${f.date} — ${escapeHtml(f.note)}</div>`).join('') : '<div>尚無追蹤紀錄</div>'
+      }</div></div>
+      <button class="btn btn-sm" data-action="follow-up" data-id="${it.id}">✓ 追蹤一下</button>`;
+  }
+  if(it.notes){ html += `<div class="field" style="margin-top:10px;"><label>備註</label><div style="white-space:pre-wrap;">${escapeHtml(it.notes)}</div></div>`; }
+  html += `<div class="field" style="margin-top:6px;color:var(--text-faint);font-size:11.5px;">建立於 ${it.createdAt.slice(0,10)}${it.completedAt?(' · 完成於 '+it.completedAt.slice(0,10)):''}</div>`;
+  $('#detailBody').innerHTML = html;
+  $('#btnToggleDone').textContent = it.status==='done' ? '取消完成' : '標記完成';
+  openOverlay('overlayDetail');
+}
+
+document.addEventListener('click', e=>{
+  const row = e.target.closest('[data-action="open-detail"]');
+  if(row && !e.target.closest('[data-action="toggle-done"]') && !e.target.closest('[data-action="follow-up"]')){
+    openDetail(row.dataset.id);
+  }
+  const chk = e.target.closest('[data-action="toggle-done"]');
+  if(chk){ e.stopPropagation(); toggleDone(chk.dataset.id); refreshAll(); if($('#searchInput').value) runSearch($('#searchInput').value); }
+  const fu = e.target.closest('[data-action="follow-up"]');
+  if(fu){
+    e.stopPropagation(); addFollowUp(fu.dataset.id); refreshAll();
+    if($('#overlayDetail').classList.contains('open')) openDetail(fu.dataset.id);
+  }
+});
+
+$('#btnToggleDone').addEventListener('click', ()=>{
+  if(!detailItemId) return;
+  toggleDone(detailItemId);
+  closeOverlay('overlayDetail');
+  refreshAll();
+});
+$('#btnDeleteItem').addEventListener('click', ()=>{
+  if(!detailItemId) return;
+  if(confirm('確定要刪除此事項？')){
+    deleteItem(detailItemId);
+    closeOverlay('overlayDetail');
+    refreshAll();
+  }
+});
+
+/* ================= Edit modal ================= */
+function setEditCategory(val){
+  $$('#f-category button').forEach(b=>b.classList.toggle('active', b.dataset.val===val));
+  $('#f-person-field').style.display = (val==='waiting') ? 'block' : 'none';
+  $('#f-date-field').style.display = (val==='task') ? 'block' : 'none';
+}
+$('#f-category').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  setEditCategory(b.dataset.val);
+});
+$('#f-priority').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  $$('#f-priority button').forEach(x=>x.classList.toggle('active', x===b));
+});
+
+$('#btnEditItem').addEventListener('click', ()=>{
+  if(!detailItemId) return;
+  const it = getItem(detailItemId);
+  closeOverlay('overlayDetail');
+  $('#editId').value = it.id;
+  $('#f-title').value = it.title;
+  $('#f-person').value = it.person||'';
+  $('#f-date').value = it.dueDate||'';
+  $('#f-tags').value = (it.tags||[]).join(', ');
+  $('#f-notes').value = it.notes||'';
+  setEditCategory(it.type);
+  $$('#f-priority button').forEach(x=>x.classList.toggle('active', x.dataset.val===(it.priority||'medium')));
+  openOverlay('overlayEdit');
+});
+
+$('#btnSaveItem').addEventListener('click', ()=>{
+  const editId = $('#editId').value;
+  const it = getItem(editId); if(!it) return;
+  const title = $('#f-title').value.trim();
+  if(!title){ toast('請輸入標題'); return; }
+  it.title = title;
+  it.type = $('#f-category .active').dataset.val;
+  it.person = it.type==='waiting' ? $('#f-person').value.trim() : '';
+  it.dueDate = it.type==='task' ? $('#f-date').value : '';
+  it.priority = ($('#f-priority .active')||{}).dataset ? $('#f-priority .active').dataset.val : 'medium';
+  it.tags = $('#f-tags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  it.notes = $('#f-notes').value.trim();
+  Store.save();
+  closeOverlay('overlayEdit');
+  refreshAll();
+  toast('已更新');
+});
+
+/* ================= Daily Review ================= */
+$('#btnReview').addEventListener('click', ()=>{
+  $('#reviewDate').textContent = todayStr();
+  ['r-q1','r-q2','r-q3'].forEach(id=> $('#'+id).value='');
+  openOverlay('overlayReview');
+});
+$('#btnSaveReview').addEventListener('click', ()=>{
+  const date = todayStr();
+  const answers = {
+    q1:$('#r-q1').value.trim(), q2:$('#r-q2').value.trim(), q3:$('#r-q3').value.trim(),
+  };
+  Store.data.dailyLogs = Store.data.dailyLogs.filter(l=>l.date!==date);
+  Store.data.dailyLogs.push({date, answers, createdAt:new Date().toISOString()});
+  Store.save();
+
+  const tomorrow = addDays(date,1);
+  const lines = answers.q2.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,3);
+  lines.forEach(t=>{ const {title,tags} = extractTags(t); addItem({title, tags, type:'task', dueDate: tomorrow, createdAt: tomorrow+'T09:00:00.000Z'}); });
+
+  closeOverlay('overlayReview');
+  refreshAll();
+  toast('Daily Review 完成' + (lines.length? `，已將 ${lines.length} 件事加入明日 Today`:''));
+});
+
+/* ================= Settings ================= */
+$('#btnSettings').addEventListener('click', ()=> openOverlay('overlaySettings'));
+$('#btnExport').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(Store.data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download = `sbpm-backup-${todayStr()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('已匯出 JSON');
+});
+$('#btnImport').addEventListener('click', ()=> $('#fileImport').click());
+$('#fileImport').addEventListener('change', e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      if(!parsed.items) throw new Error('格式錯誤');
+      Store.data = {items:parsed.items||[], dailyLogs:parsed.dailyLogs||[]};
+      Store.save();
+      refreshAll();
+      closeOverlay('overlaySettings');
+      toast('匯入成功');
+    }catch(err){ alert('匯入失敗：檔案格式不正確'); }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+});
+$('#btnReset').addEventListener('click', ()=>{
+  if(confirm('確定要清空所有資料嗎？建議先匯出備份。')){
+    Store.data = {items:[], dailyLogs:[]};
+    Store.save();
+    refreshAll();
+    closeOverlay('overlaySettings');
+    toast('已清空所有資料');
+  }
+});
+
+
+/* ================= Init ================= */
+function init(){
+  Store.load();
+  refreshAll();
+}
+init();
+
+})();
+</script>
+</body>
+</html>
